@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Campus IQ</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            color: #222;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .logout {
+            color: #2563eb;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 20px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .welcome h2 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🤖 Campus IQ</h1>
+        <a class="logout" href="{{ url_for('logout') }}">Logout</a>
+    </header>
+
+    <main>
+        <section class="welcome">
+            <h2>Welcome, {{ full_name }}! 👋</h2>
+
+            <p>
+                You are logged in as:
+                <strong>{{ role|capitalize }}</strong>
+            </p>
+
+            <p>
+                Welcome to your AI-Powered Smart Campus dashboard.
+            </p>
+        </section>
+
+        <section class="cards">
+            <div class="card">
+                <h3>📅 Timetable</h3>
+                <p>Check your classes and scheduled subjects.</p>
+            </div>
+
+            <div class="card">
+                <h3>📍 Campus Locations</h3>
+                <p>Find classrooms, laboratories, the library, and offices.</p>
+            </div>
+
+            <div class="card">
+                <h3>📝 Attendance</h3>
+                <p>Attendance features will be added in the next stages.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
