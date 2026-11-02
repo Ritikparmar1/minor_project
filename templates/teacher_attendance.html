@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Attendance Management | Campus IQ</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            color: #222;
+        }
+
+        header {
+            background: #2861e8;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 {
+            margin: 0;
+        }
+
+        .back {
+            color: #2861e8;
+            background: white;
+            padding: 12px 18px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #00000010;
+        }
+
+        h1 {
+            color: #2861e8;
+        }
+
+        .info {
+            background: #eef4ff;
+            padding: 18px;
+            border-radius: 10px;
+            line-height: 1.7;
+        }
+
+        .form-group {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 13px 22px;
+            background: #2861e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #174bc4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2>🤖 Campus IQ</h2>
+        <a href="{{ url_for('teacher_dashboard') }}" class="back">
+            Back to Dashboard
+        </a>
+    </header>
+
+    <div class="container">
+
+        <div class="panel">
+            {% if error %}
+    <p style="color: red; font-weight: bold;">
+        {{ error }}
+    </p>
+{% endif %}
+
+{% if success %}
+    <div class="info">
+        <h2>✅ {{ success }}</h2>
+
+        <p><strong>Session ID:</strong> {{ session_id }}</p>
+        <p><strong>Subject:</strong> {{ subject }}</p>
+        <p><strong>Semester:</strong> {{ semester }}</p>
+        <p><strong>Section:</strong> {{ section }}</p>
+        <p><strong>Classroom:</strong> {{ room or 'Not specified' }}</p>
+        <p><strong>Expires at:</strong> {{ expires_at }}</p>
+
+      {% if qr_code_data %}
+    <h3>Attendance QR Code</h3>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <img
+            src="data:image/png;base64,{{ qr_code_data }}"
+            alt="Attendance QR Code"
+            width="250"
+            height="250"
+            style="border: 1px solid #ddd; padding: 10px; border-radius: 10px;"
+        >
+    </div>
+
+    <p style="text-align: center;">
+        Students can scan this QR code for attendance.
+    </p>
+{% endif %}
+</div>
+{% endif %}
+            <h1>📝 Attendance Management</h1>
+
+            <p>Welcome, <strong>{{ full_name }}</strong>!</p>
+
+            <div class="info">
+                <strong>QR-Based Attendance System</strong>
+                <p>
+                    Create an attendance session for your class.
+                    Students will scan a temporary QR code to mark attendance.
+                </p>
+            </div>
+
+            <h2>Create Attendance Session</h2>
+            <form method="POST" action="{{ url_for('teacher_attendance') }}">
+           
+<div class="form-group">
+    <label for="subject">Subject</label>
+    <input
+        type="text"
+        id="subject"
+        name="subject"
+        placeholder="Example: TOC"
+        required
+    >
+</div>
+
+<div class="form-group">
+    <label for="semester">Semester</label>
+    <select id="semester" name="semester" required>
+        <option value="">Select Semester</option>
+        <option value="1">1st Semester</option>
+        <option value="2">2nd Semester</option>
+        <option value="3">3rd Semester</option>
+        <option value="4">4th Semester</option>
+        <option value="5">5th Semester</option>
+        <option value="6">6th Semester</option>
+        <option value="7">7th Semester</option>
+        <option value="8">8th Semester</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="section">Section</label>
+    <input
+        type="text"
+        id="section"
+        name="section"
+        placeholder="Example: A"
+        required
+    >
+</div>
+
+<div class="form-group">
+    <label for="room">Classroom</label>
+    <input
+        type="text"
+        id="room"
+        name="room"
+        placeholder="Example: C-201"
+    >
+</div>
+
+<div class="form-group">
+    <label for="duration">QR Code Validity</label>
+    <select id="duration" name="duration" required>
+        <option value="5">5 Minutes</option>
+        <option value="10" selected>10 Minutes</option>
+        <option value="15">15 Minutes</option>
+        <option value="30">30 Minutes</option>
+    </select>
+</div>
+
+<button type="submit">
+    Generate Attendance Session
+</button>
+</form>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -34,7 +34,7 @@ def create_database():
         )
     """)
 
-          # Create timetable table
+    # Create timetable table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS timetable (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

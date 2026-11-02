@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance | Campus IQ</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .attendance-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .attendance-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .attendance-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .attendance-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .attendance-container button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="attendance-container">
+
+        <h1>QR Attendance</h1>
+
+        <p>Welcome, {{ full_name }}!</p>
+
+        {% if success %}
+            <div class="message success">
+                {{ success }}
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="message error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        
+<!-- QR Camera Scanner -->
+<h3>Scan Teacher's QR Code</h3>
+
+<div id="reader" style="width: 100%;"></div>
+
+<p id="scan-status" style="text-align:center;">
+    Click Start Scanner to open your camera.
+</p>
+
+<button type="button" id="start-scanner">
+    Start Scanner
+</button>
+
+<button type="button" id="stop-scanner"
+        style="background:#dc2626; margin-top:10px;">
+    Stop Scanner
+</button>
+
+<hr style="margin:25px 0;">
+
+<h3>Or Enter QR Token Manually</h3>
+
+<form method="POST">
+
+    <label for="qr_token">Attendance QR Token</label>
+
+    <input
+        type="text"
+        id="qr_token"
+        name="qr_token"
+        placeholder="Scan or enter QR token"
+        required
+    >
+
+    <button type="submit">
+        Mark Attendance
+    </button>
+
+</form>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+    let scanner = null;
+
+    const startButton = document.getElementById("start-scanner");
+    const stopButton = document.getElementById("stop-scanner");
+    const tokenInput = document.getElementById("qr_token");
+    const statusText = document.getElementById("scan-status");
+
+    startButton.addEventListener("click", async function () {
+
+        if (scanner) {
+            return;
+        }
+
+        scanner = new Html5Qrcode("reader");
+
+        try {
+            await scanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+
+                async function (decodedText) {
+
+                    tokenInput.value = decodedText;
+                    statusText.textContent = "QR code scanned successfully!";
+
+                    await scanner.stop();
+                    scanner.clear();
+                    scanner = null;
+                },
+
+                function () {}
+            );
+
+            statusText.textContent = "Camera started. Point it at the QR code.";
+
+        } catch (error) {
+            scanner = null;
+            statusText.textContent =
+                "Camera could not start. Allow camera permission and try again.";
+        }
+    });
+
+    stopButton.addEventListener("click", async function () {
+
+        if (scanner) {
+            try {
+                await scanner.stop();
+                scanner.clear();
+            } catch (error) {
+                console.log(error);
+            }
+
+            scanner = null;
+        }
+
+        statusText.textContent = "Scanner stopped.";
+    });
+</script>
+
+
+        <p style="text-align:center; margin-top:20px;">
+            <a href="{{ url_for('dashboard') }}">
+                Back to Dashboard
+            </a>
+        </p>
+
+    </div>
+
+</body>
+</html>

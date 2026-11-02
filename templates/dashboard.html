@@ -73,6 +73,7 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
         }
 
         .card h3 {
@@ -84,16 +85,28 @@
             color: #666;
             line-height: 1.6;
         }
+
+        .card-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card-link:hover .card {
+            transform: translateY(-5px);
+        }
     </style>
 </head>
 
 <body>
+
     <header>
         <h1>🤖 Campus IQ</h1>
         <a class="logout" href="{{ url_for('logout') }}">Logout</a>
     </header>
 
     <main>
+
         <section class="welcome">
             <h2>Welcome, {{ full_name }}! 👋</h2>
 
@@ -108,21 +121,59 @@
         </section>
 
         <section class="cards">
-            <div class="card">
-                <h3>📅 Timetable</h3>
-                <p>Check your classes and scheduled subjects.</p>
-            </div>
 
-            <div class="card">
-                <h3>📍 Campus Locations</h3>
-                <p>Find classrooms, laboratories, the library, and offices.</p>
-            </div>
+            <!-- Timetable Card -->
+            <a href="{{ url_for('timetable') }}" class="card-link">
+                <div class="card">
+                    <h3>📅 Timetable</h3>
+                    <p>Check your classes and scheduled subjects.</p>
+                    <strong>View Timetable →</strong>
+                </div>
+            </a>
 
-            <div class="card">
-                <h3>📝 Attendance</h3>
-                <p>Attendance features will be added in the next stages.</p>
-            </div>
+           <!-- Campus Locations Card -->
+<a href="{{ url_for('locations') }}" class="card-link">
+    <div class="card">
+        <h3>📍 Campus Locations</h3>
+        <p>Find classrooms, laboratories, the library, and offices.</p>
+        <strong>Explore Locations →</strong>
+    </div>
+</a>
+
+
+<!-- QR Attendance Card -->
+<a href="{{ url_for('student_attendance') }}" class="card-link">
+    <div class="card">
+        <h3>📷 QR Attendance</h3>
+        <p>Mark your attendance using the QR token provided by your teacher.</p>
+        <strong>Mark Attendance →</strong>
+    </div>
+</a>
+
+
+
+
+<!-- Attendance History Card -->
+<a href="{{ url_for('student_attendance_history') }}" class="card-link">
+    <div class="card">
+        <h3>📝 My Attendance History</h3>
+        <p>View your attendance records, subjects, dates, and verification details.</p>
+        <strong>View Attendance History →</strong>
+    </div>
+</a>
+
+<!-- Attendance Percentage Card -->
+<a href="{{ url_for('student_attendance_percentage') }}" class="card-link">
+    <div class="card">
+        <h3>📊 Attendance Percentage</h3>
+        <p>Check your subject-wise attendance percentage and total classes attended.</p>
+        <strong>View Attendance Percentage →</strong>
+    </div>
+</a>
+
         </section>
+
     </main>
+
 </body>
 </html>

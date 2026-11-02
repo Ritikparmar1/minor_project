@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard | Campus IQ</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            color: #222;
+        }
+
+        header {
+            background: #2861e8;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 {
+            margin: 0;
+        }
+
+        .logout {
+            background: white;
+            color: #2861e8;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #00000010;
+            margin-bottom: 28px;
+        }
+
+        .welcome h1 {
+            color: #2861e8;
+            margin-top: 0;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #00000010;
+        }
+
+        .card h3 {
+            color: #2861e8;
+        }
+
+        .card p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .card a {
+            color: #111;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2>🤖 Campus IQ - Teacher</h2>
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+    </header>
+
+    <div class="container">
+
+        <section class="welcome">
+            <h1>Welcome, {{ full_name }}! 👋</h1>
+
+            <p>You are logged in as:
+                <strong>{{ role|capitalize }}</strong>
+            </p>
+
+            <p>Welcome to your AI-Powered Smart Campus Teacher Dashboard.</p>
+        </section>
+
+        <section class="cards">
+
+            <div class="card">
+                <h3>📅 Timetable</h3>
+                <p>View your scheduled classes and subjects.</p>
+                <a href="{{ url_for('timetable') }}">View Timetable →</a>
+            </div>
+
+            <div class="card">
+                <h3>📍 Campus Locations</h3>
+                <p>Find classrooms, laboratories, the library, and offices.</p>
+                <a href="{{ url_for('locations') }}">Explore Locations →</a>
+            </div>
+
+           <div class="card">
+    <h3>📝 Attendance Management</h3>
+    <p>Create attendance sessions and manage student attendance.</p>
+    <a href="{{ url_for('teacher_attendance') }}">
+        Open Attendance Management →
+    </a>
+    <a href="{{ url_for('teacher_attendance_records') }}" class="card-link">
+    <div class="card">
+        <h3>📋 Attendance Records</h3>
+        <p>View attendance sessions and check the number of students present.</p>
+        <strong>View Records →</strong>
+    </div>
+</a>
+</div>
+
+        </section>
+
+    </div>
+
+</body>
+</html>

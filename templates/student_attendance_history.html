@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance | Campus IQ</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .attendance-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .attendance-table th {
+            background: #243b55;
+            color: white;
+        }
+
+        .attendance-table tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .empty-message {
+            text-align: center;
+            margin: 30px;
+            color: #666;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #243b55;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="attendance-container">
+
+    <h1>📋 My Attendance History</h1>
+
+    <p>Welcome, {{ full_name }}!</p>
+
+    <h3>Total Classes Attended: {{ records|length }}</h3>
+
+    {% if records %}
+
+    <div class="table-wrapper">
+
+        <table class="attendance-table">
+
+            <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>Subject</th>
+                    <th>Semester</th>
+                    <th>Section</th>
+                    <th>Classroom</th>
+                    <th>Status</th>
+                    <th>Verification</th>
+                    <th>Date & Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.subject }}</td>
+                    <td>{{ record.semester }}</td>
+                    <td>{{ record.section }}</td>
+                    <td>{{ record.room or 'Not specified' }}</td>
+                    <td>{{ record.status }}</td>
+                    <td>{{ record.verification_method }}</td>
+                    <td>{{ record.verified_at }}</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <p class="empty-message">
+            You have not marked attendance in any session yet.
+        </p>
+
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="back-link">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+</body>
+</html>

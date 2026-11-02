@@ -1,0 +1,108 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records | Campus IQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .records-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+        }
+
+        .records-table th,
+        .records-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .records-table th {
+            background: #263b80;
+            color: white;
+        }
+
+        .status {
+            color: green;
+            font-weight: bold;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="records-container">
+
+        <h1>📋 Teacher Attendance Records</h1>
+        <p>View your attendance sessions and student counts.</p>
+
+        {% if records %}
+
+        <div class="table-wrapper">
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Subject</th>
+                        <th>Semester</th>
+                        <th>Section</th>
+                        <th>Classroom</th>
+                        <th>Present Students</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.id }}</td>
+                        <td>{{ record.subject }}</td>
+                        <td>{{ record.semester }}</td>
+                        <td>{{ record.section }}</td>
+                        <td>{{ record.room }}</td>
+                        <td>{{ record.total_present }}</td>
+                        <td>{{ record.status }}</td>
+                        <td>
+    <a href="{{ url_for('teacher_attendance_session_details', session_id=record.id) }}">
+        View Details
+    </a>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+            <p>No attendance sessions found.</p>
+        {% endif %}
+
+        <a class="back-link" href="{{ url_for('teacher_dashboard') }}">
+            ← Back to Teacher Dashboard
+        </a>
+
+    </div>
+
+</body>
+</html>
+```

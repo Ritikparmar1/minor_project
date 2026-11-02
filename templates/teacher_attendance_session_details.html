@@ -1,0 +1,147 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Details | Campus IQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .details-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .session-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 20px;
+        }
+
+        .details-table th,
+        .details-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .details-table th {
+            background: #263b80;
+            color: white;
+        }
+
+        .details-table tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="details-container">
+
+    <h1>📋 Attendance Session Details</h1>
+
+    <div class="session-info">
+        <h2>{{ attendance_session.subject }} Attendance</h2>
+
+        <p><strong>Session ID:</strong> {{ attendance_session.id }}</p>
+        <p><strong>Semester:</strong> {{ attendance_session.semester }}</p>
+        <p><strong>Section:</strong> {{ attendance_session.section }}</p>
+        <p><strong>Classroom:</strong> {{ attendance_session.room or 'Not specified' }}</p>
+        <p><strong>Status:</strong> {{ attendance_session.status }}</p>
+        {% if attendance_session.status == 'active' %}
+    <form method="POST"
+          action="{{ url_for('close_attendance_session', session_id=attendance_session.id) }}"
+          onsubmit="return confirm('Are you sure you want to close this attendance session?');">
+
+        <button type="submit"
+                style="background: #dc3545;
+                       color: white;
+                       padding: 10px 20px;
+                       border: none;
+                       border-radius: 5px;
+                       cursor: pointer;">
+            Close Attendance Session
+        </button>
+
+    </form>
+{% else %}
+    <p style="color: green;">
+        <strong>This attendance session is closed.</strong>
+    </p>
+{% endif %}
+    </div>
+
+    <h2>Present Students ({{ students|length }})</h2>
+
+    {% if students %}
+
+    <div class="table-wrapper">
+        <table class="details-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Semester</th>
+                    <th>Section</th>
+                    <th>Attendance Status</th>
+                    <th>Verification Method</th>
+                    <th>Date & Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.semester }}</td>
+                    <td>{{ student.section }}</td>
+                    <td>{{ student.status }}</td>
+                    <td>{{ student.verification_method }}</td>
+                    <td>{{ student.verified_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+        <p>No students have marked attendance in this session yet.</p>
+
+    {% endif %}
+
+    <a class="back-link"
+       href="{{ url_for('teacher_attendance_records') }}">
+        ← Back to Attendance Records
+    </a>
+
+</div>
+
+</body>
+</html>
+```

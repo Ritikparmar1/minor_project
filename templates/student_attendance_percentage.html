@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Percentage | Campus IQ</title>
+
+    <style>
+        .download-btn {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.download-btn:hover {
+    background: #1d4ed8;
+}
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.summary-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+.attendance-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.low-attendance {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.good-attendance {
+    background: #dcfce7;
+    color: #15803d;
+}
+.warning-box {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-left: 5px solid #dc2626;
+    color: #991b1b;
+    padding: 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.warning-box h3 {
+    margin: 0 0 10px;
+    color: #dc2626;
+}
+
+.warning-box p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+.summary-box h3 {
+    margin: 0 0 12px;
+    color: #555;
+    font-size: 16px;
+}
+
+.summary-box p {
+    margin: 0;
+    font-size: 26px;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+@media (max-width: 700px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 14px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .percentage {
+            font-weight: bold;
+            color: #15803d;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📊 My Attendance Percentage</h1>
+
+    <p>Welcome, {{ full_name }}!</p>
+    <div class="summary-grid">
+
+    <div class="summary-box">
+    <h3>Overall Attendance</h3>
+
+    <p>{{ overall_percentage }}%</p>
+
+    {% if overall_percentage >= 75 %}
+        <span class="attendance-badge good-attendance">
+            Satisfactory
+        </span>
+    {% else %}
+        <span class="attendance-badge low-attendance">
+            Low Attendance
+        </span>
+    {% endif %}
+</div>
+    <div class="summary-box">
+        <h3>Classes Attended</h3>
+        <p>{{ attended_classes }}</p>
+    </div>
+
+    <div class="summary-box">
+        <h3>Total Classes</h3>
+        <p>{{ total_classes }}</p>
+    </div>
+
+    <div class="summary-box">
+        <h3>Required Attendance</h3>
+        <p>75%</p>
+    </div>
+
+</div>
+{% if overall_percentage < 75 %}
+
+<div class="warning-box">
+
+    <h3>⚠️ Attendance Warning</h3>
+
+    <p>
+        Your overall attendance is below the required 75%.
+        You need to attend your upcoming classes regularly
+        to improve your attendance.
+    </p>
+
+</div>
+
+{% endif %}
+
+    <div class="card">
+
+        <h2>Subject-wise Attendance</h2>
+        <a href="{{ url_for('download_attendance_report') }}"
+   class="download-btn">
+    📄 Download Attendance Report (PDF)
+</a>
+
+        {% if records %}
+
+        
+<div class="table-wrapper">
+    <table>
+
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Attended Classes</th>
+                <th>Total Classes</th>
+                <th>Attendance Percentage</th>
+                <th>Attendance Status</th>
+                <th>Classes Needed for 75%</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for record in records %}
+            <tr>
+                <td>{{ record.subject }}</td>
+
+                <td>{{ record.attended_classes }}</td>
+
+                <td>{{ record.total_classes }}</td>
+
+
+<td>
+    <strong>{{ record.percentage }}%</strong>
+
+    <div style="
+        width: 150px;
+        height: 12px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        margin: 8px auto;
+        overflow: hidden;
+    ">
+        <div style="
+            width: {{ [record.percentage, 100]|min }}%;
+            height: 12px;
+            background: {% if record.percentage >= 75 %}#16a34a{% else %}#dc2626{% endif %};
+            border-radius: 10px;
+        "></div>
+    </div>
+</td>
+
+
+                <td>
+                    {% if record.percentage >= 75 %}
+                        <span style="color: green; font-weight: bold;">
+                            Satisfactory
+                        </span>
+                    {% else %}
+                        <span style="color: red; font-weight: bold;">
+                            Low Attendance
+                        </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if record.percentage >= 75 %}
+                        0
+                    {% else %}
+                        {{ ((75 * record.total_classes - 100 * record.attended_classes) / 25)|round(0, 'ceil')|int }}
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+</div>
+
+        {% else %}
+
+        <p class="empty">
+            No completed attendance sessions are available yet.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="back-link">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+</body>
+</html>
