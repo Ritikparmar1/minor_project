@@ -457,6 +457,240 @@ def student_attendance():
     )
 
 
+# ---------------- STUDENT FACE REGISTRATION ----------------
+
+@app.route("/student/face-registration")
+@login_required
+@role_required("student")
+def student_face_registration():
+
+    return render_template(
+        "face_registration.html",
+        full_name=session.get("full_name")
+    )
+
+# ---------------- FACE DETECTION API ----------------
+
+@app.route("/student/face-detection", methods=["POST"])
+@login_required
+@role_required("student")
+def student_face_detection():
+
+    import base64
+    import numpy as np
+    import cv2
+
+    from flask import jsonify
+    from face_recognition.face_utils import detect_faces
+
+    try:
+        data = request.get_json(silent=True) or {}
+
+        image_data = data.get("image", "")
+
+        if not image_data:
+            return jsonify({
+                "success": False,
+                "message": "No image received."
+            }), 400
+
+        # Remove Base64 image prefix
+        if "," in image_data:
+            image_data = image_data.split(",", 1)[1]
+
+        image_bytes = base64.b64decode(
+            image_data,
+            validate=True
+        )
+
+        if len(image_bytes) > 4 * 1024 * 1024:
+            return jsonify({
+                "success": False,
+                "message": "Image is too large."
+            }), 413
+
+        image_array = np.frombuffer(
+            image_bytes,
+            dtype=np.uint8
+        )
+
+        frame = cv2.imdecode(
+            image_array,
+            cv2.IMREAD_COLOR
+        )
+
+        if frame is None:
+            return jsonify({
+                "success": False,
+                "message": "Invalid image."
+            }), 400
+
+        gray, faces = detect_faces(frame)
+
+        face_boxes = [
+            {
+                "x": int(x),
+                "y": int(y),
+                "width": int(w),
+                "height": int(h)
+            }
+            for (x, y, w, h) in faces
+        ]
+
+        return jsonify({
+            "success": True,
+            "face_count": len(face_boxes),
+            "faces": face_boxes,
+            "message": (
+                "Face detected!"
+                if len(face_boxes) == 1
+                else "Please show only one face."
+                if len(face_boxes) > 1
+                else "No face detected."
+            )
+        })
+
+    except Exception as error:
+
+        app.logger.exception("Face detection failed")
+
+        return jsonify({
+            "success": False,
+            "message": "Face detection failed."
+        }), 400
+    
+# ---------------- FACE REGISTRATION API ----------------
+
+
+@app.route("/student/face-register", methods=["POST"])
+@login_required
+@role_required("student")
+def student_face_register():
+
+    import base64
+    import numpy as np
+    import cv2
+
+    from flask import jsonify
+    from face_recognition.face_utils import detect_faces
+
+    connection = None
+
+    try:
+        data = request.get_json(silent=True) or {}
+
+        # Check student consent
+        if data.get("consent") is not True:
+            return jsonify({
+                "success": False,
+                "message": "Please provide consent first."
+            }), 400
+
+        image_data = data.get("image", "")
+
+        if not image_data:
+            return jsonify({
+                "success": False,
+                "message": "No image received."
+            }), 400
+
+        if "," in image_data:
+            image_data = image_data.split(",", 1)[1]
+
+        image_bytes = base64.b64decode(
+            image_data,
+            validate=True
+        )
+
+        if len(image_bytes) > 4 * 1024 * 1024:
+            return jsonify({
+                "success": False,
+                "message": "Image is too large."
+            }), 413
+
+        image_array = np.frombuffer(
+            image_bytes,
+            dtype=np.uint8
+        )
+
+        frame = cv2.imdecode(
+            image_array,
+            cv2.IMREAD_COLOR
+        )
+
+        if frame is None:
+            return jsonify({
+                "success": False,
+                "message": "Invalid image."
+            }), 400
+
+        gray, faces = detect_faces(frame)
+
+        # Exactly one face is required
+        if len(faces) != 1:
+            return jsonify({
+                "success": False,
+                "message": "Please show exactly one face."
+            }), 400
+
+        # Crop detected face
+        x, y, w, h = faces[0]
+        face_image = gray[y:y+h, x:x+w]
+
+        # Resize face image
+        face_image = cv2.resize(
+            face_image,
+            (200, 200)
+        )
+
+        # Encode image as PNG bytes
+        success, encoded_image = cv2.imencode(
+            ".png",
+            face_image
+        )
+
+        if not success:
+            return jsonify({
+                "success": False,
+                "message": "Could not process face image."
+            }), 400
+
+        face_template = encoded_image.tobytes()
+
+        # Save a NEW face sample
+        connection = get_database()
+
+        connection.execute("""
+            INSERT INTO face_samples
+            (user_id, face_template)
+            VALUES (?, ?)
+        """, (
+            session["user_id"],
+            face_template
+        ))
+
+        connection.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Face sample registered successfully!"
+        })
+
+    except Exception:
+
+        app.logger.exception("Face registration failed")
+
+        return jsonify({
+            "success": False,
+            "message": "Face registration failed."
+        }), 400
+
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+
 
 # ---------------- TEACHER ATTENDANCE RECORDS ----------------
 
@@ -905,7 +1139,6 @@ def download_attendance_report():
 
     elements.append(report_table)
 
-    elements.append(report_table)
 
     pdf.build(elements)
 

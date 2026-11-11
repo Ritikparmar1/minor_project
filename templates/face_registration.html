@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Registration | Campus IQ</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .video-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin: 15px auto;
+        }
+
+        video {
+            display: block;
+            width: 100%;
+            border-radius: 10px;
+            background: #222;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        button {
+            padding: 12px 22px;
+            margin: 8px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .consent {
+            margin: 20px 0;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Campus IQ</h1>
+    <h2>Face Registration</h2>
+
+    <p>Welcome, {{ full_name }}</p>
+
+    <p>
+        Register your face voluntarily for the
+        Campus IQ face-verification prototype.
+    </p>
+
+    <div class="consent">
+        <label>
+            <input type="checkbox" id="consent">
+            I consent to capturing and processing my face
+            for this prototype.
+        </label>
+    </div>
+
+    <div class="video-wrap">
+        <video id="camera" autoplay playsinline></video>
+        <canvas id="overlay"></canvas>
+    </div>
+
+    <br>
+
+    <button id="startCamera">Start Camera</button>
+
+    <button id="stopCamera" disabled>
+        Stop Camera
+    </button>
+
+    <button id="detectFace" disabled>
+        Detect Face
+    </button>
+
+    <button id="registerFace" disabled>
+        Register Face
+    </button>
+
+    <p id="message">
+        Please provide consent before starting the camera.
+    </p>
+
+    <a href="/student/attendance">
+        Back to Attendance
+    </a>
+
+</div>
+
+<script>
+
+    // Get HTML elements
+
+    const video = document.getElementById("camera");
+    const consent = document.getElementById("consent");
+    const message = document.getElementById("message");
+
+    const startButton = document.getElementById("startCamera");
+    const stopButton = document.getElementById("stopCamera");
+    const detectButton = document.getElementById("detectFace");
+    const registerButton = document.getElementById("registerFace");
+
+    const overlay = document.getElementById("overlay");
+    const ctx = overlay.getContext("2d");
+
+    let cameraStream = null;
+
+
+    // Update button availability
+
+    function updateButtons() {
+
+        const cameraRunning = cameraStream !== null;
+        const allowed = consent.checked && cameraRunning;
+
+        detectButton.disabled = !allowed;
+        registerButton.disabled = !allowed;
+
+        startButton.disabled = cameraRunning || !consent.checked;
+        stopButton.disabled = !cameraRunning;
+    }
+
+
+    // Consent checkbox
+
+    consent.addEventListener("change", function () {
+
+        if (!consent.checked) {
+            message.textContent =
+                "Consent is required to use face registration.";
+        } else {
+            message.textContent =
+                "Consent provided. You can start the camera.";
+        }
+
+        updateButtons();
+    });
+
+
+    // START CAMERA
+
+    startButton.addEventListener("click", async function () {
+
+        if (!consent.checked) {
+            message.textContent =
+                "Please provide consent first.";
+            return;
+        }
+
+        try {
+
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+
+            video.srcObject = cameraStream;
+
+            message.textContent =
+                "Camera started successfully!";
+
+            updateButtons();
+
+        } catch (error) {
+
+            message.textContent =
+                "Unable to access camera. Check browser permissions.";
+
+        }
+
+    });
+
+
+    // STOP CAMERA
+
+    stopButton.addEventListener("click", function () {
+
+        if (cameraStream) {
+
+            cameraStream.getTracks().forEach(track => track.stop());
+
+            video.srcObject = null;
+            cameraStream = null;
+        }
+
+        ctx.clearRect(
+            0,
+            0,
+            overlay.width,
+            overlay.height
+        );
+
+        updateButtons();
+
+        message.textContent = "Camera stopped.";
+
+    });
+
+
+    // CAPTURE IMAGE FROM CAMERA
+
+    function captureImage() {
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const canvasContext = canvas.getContext("2d");
+
+        canvasContext.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        return canvas.toDataURL("image/jpeg", 0.8);
+    }
+
+
+    // FACE DETECTION
+
+    detectButton.addEventListener("click", async function () {
+
+        if (!cameraStream || !video.videoWidth) {
+            message.textContent = "Start camera first.";
+            return;
+        }
+
+        detectButton.disabled = true;
+        registerButton.disabled = true;
+
+        message.textContent = "Detecting face...";
+
+        try {
+
+            const image = captureImage();
+
+            const response = await fetch(
+                "/student/face-detection",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        image: image
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Detection failed."
+                );
+            }
+
+            overlay.width = video.videoWidth;
+            overlay.height = video.videoHeight;
+
+            ctx.clearRect(
+                0,
+                0,
+                overlay.width,
+                overlay.height
+            );
+
+            result.faces.forEach(face => {
+
+                ctx.strokeStyle = "#00ff00";
+                ctx.lineWidth = 4;
+
+                ctx.strokeRect(
+                    face.x,
+                    face.y,
+                    face.width,
+                    face.height
+                );
+
+            });
+
+            message.textContent = result.message;
+
+        } catch (error) {
+
+            message.textContent = error.message;
+
+        } finally {
+
+            updateButtons();
+
+        }
+
+    });
+
+
+    // REGISTER FACE
+
+    registerButton.addEventListener("click", async function () {
+
+        if (!consent.checked) {
+            message.textContent =
+                "Please provide consent first.";
+            return;
+        }
+
+        if (!cameraStream || !video.videoWidth) {
+            message.textContent = "Start camera first.";
+            return;
+        }
+
+        detectButton.disabled = true;
+        registerButton.disabled = true;
+
+        message.textContent =
+            "Registering your face. Please wait...";
+
+        try {
+
+            const image = captureImage();
+
+            const response = await fetch(
+                "/student/face-register",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        image: image,
+                        consent: true
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.message || "Face registration failed."
+                );
+
+            }
+
+            message.textContent =
+                result.message;
+
+        } catch (error) {
+
+            message.textContent =
+                error.message;
+
+        } finally {
+
+            updateButtons();
+
+        }
+
+    });
+
+
+    // STOP CAMERA WHEN LEAVING PAGE
+
+    window.addEventListener("beforeunload", function () {
+
+        if (cameraStream) {
+
+            cameraStream.getTracks().forEach(track => track.stop());
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
+html>
